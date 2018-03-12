@@ -1,2 +1,4 @@
 # -*- coding: utf-8 -*-
-# Author juraj.komacka@firma.seznam.cz
+
+sqlalchemy_track_modifications = False
+db_connection_string = 'sqlite:////tmp/test.db'
