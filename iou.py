@@ -7,7 +7,7 @@ import traceback
 import flask
 
 from iou import config
-from iou.models import init_app_db, user_schema
+from iou.schemas import init_app_db, schemas
 
 app = flask.Flask(__name__)
 init_app_db(app, config)
@@ -16,21 +16,23 @@ init_app_db(app, config)
 def index():
     return "IOU OK"
 
-@app.route('/users/', methods=['GET', 'POST'])
-def users():
-    if flask.request.method == 'POST':
-        new_obj = user_schema.make_instance(flask.request.json)
-        db.session.add(new_obj)
-        db.session.commit()
-        return flask.make_response(user_schema.jsonify(new_obj), 201)
-    else:
-        all_objs = user_schema.Meta.model.query.all()
-        return user_schema.jsonify(all_objs, many=True)
+def schemaOrAbort(modelName):
+    if modelName not in schemas:
+        flask.abort(404)
+    return schemas[modelName]
 
-@app.route('/users/<id>')
-def user_detail(id):
-    obj = user_schema.Meta.model.query.get(id)
-    return user_schema.jsonify(obj)
+@app.route('/api/<modelName>/', methods=['GET'])
+def schemaList(modelName):
+    return schemaOrAbort(modelName).list()
+
+@app.route('/api/<modelName>/', methods=['POST'])
+def schemaCreate(modelName):
+    data = schemaOrAbort(modelName).create(flask.request.json)
+    return flask.make_response(data, 201)
+
+@app.route('/api/<modelName>/<int:id>')
+def schemaDetail(modelName, id):
+    return schemaOrAbort(modelName).detail(id)
 
 @app.errorhandler(Exception)
 def internal_server_error(error):
