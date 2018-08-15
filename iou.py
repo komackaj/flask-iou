@@ -6,13 +6,15 @@ import traceback
 
 import flask
 
-from iou import config
+from iou import config, login
 from iou.schemas import init_app_db, schemas
 
 app = flask.Flask(__name__)
 init_app_db(app, config)
+login.init_app(app)
 
 @app.route('/')
+@login.logged
 def index():
     return "IOU OK"
 
