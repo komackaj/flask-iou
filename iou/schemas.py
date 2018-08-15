@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 import iou.models as models
+import iou.login as login
 from flask_marshmallow import Marshmallow
 
 ma = Marshmallow()
 
-def init_app_db(app, config):
-    app.config['SQLALCHEMY_DATABASE_URI'] = config.db_connection_string
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = config.sqlalchemy_track_modifications
+def init_app_db(app):
     models.db.init_app(app)
+    login.init_app(app, models.danceAlchemyBackend)
     ma.init_app(app)
 
 class SchemaBase(ma.ModelSchema):
@@ -29,6 +29,10 @@ class SchemaBase(ma.ModelSchema):
 class UserSchema(SchemaBase):
     class Meta:
         model = models.User
+
+class OAuthSchema(SchemaBase):
+    class Meta:
+        model = models.OAuth
 
 # example entry: 'user': UserSchema()
 schemas = {
