@@ -5,8 +5,6 @@ from flask_marshmallow import Marshmallow
 ma = Marshmallow()
 
 def init_app_db(app, config):
-    app.config['SQLALCHEMY_DATABASE_URI'] = config.db_connection_string
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = config.sqlalchemy_track_modifications
     models.db.init_app(app)
     ma.init_app(app)
 
