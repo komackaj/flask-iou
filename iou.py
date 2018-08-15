@@ -5,8 +5,8 @@ import sys
 import traceback
 
 import flask
+from flask_login import login_required, current_user, logout_user
 
-from iou import config, login
 from iou.schemas import init_app_db, schemas
 
 app = flask.Flask(__name__)
@@ -14,9 +14,20 @@ app.config.from_object("iou.config")
 init_app_db(app)
 
 @app.route('/')
-@login.logged
 def index():
     return "IOU OK"
+
+@app.route('/login')
+@login_required
+def login():
+    return "Logged in as " + current_user.email
+
+@app.route('/logout')
+@login_required
+def logout():
+    logout_user()
+    return flask.redirect(flask.url_for('index'))
+
 
 def schemaOrAbort(modelName):
     if modelName not in schemas:

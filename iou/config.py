@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+USE_SESSION_FOR_NEXT = True
+
 SQLALCHEMY_TRACK_MODIFICATIONS = False
 SQLALCHEMY_DATABASE_URI = 'sqlite:////tmp/test.db'
 

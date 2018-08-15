@@ -1,0 +1,7 @@
+blinker
+flask-dance
+flask-login
+flask-marshmallow
+flask-sqlalchemy
+marshmallow-sqlalchemy
+sqlalchemy-utils
