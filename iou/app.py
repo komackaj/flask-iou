@@ -19,7 +19,7 @@ def create_tables():
 
 @app.route('/')
 def index():
-    return "IOU OK"
+    return flask.render_template('index.html')
 
 @app.route('/user', methods=["GET", "POST"])
 def user():
