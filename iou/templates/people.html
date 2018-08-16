@@ -1,0 +1,18 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+
+<h5>People</h5>
+
+TODO: actions only if is admin
+<table class="striped">
+    <tbody>
+        <tr>
+            <td><span>{{ current_user.email }}</span></td>
+            <td><a href="{{ url_for('edit_offer') }}?user={{ current_user.email }}&myItem=0&hisItem=1">Add credit</a></td>
+            <td><a href="{{ url_for('edit_offer') }}?user={{ current_user.email }}">Make an offer</a></td>
+        </tr>
+    </tbody>
+</table>
+
+{% endblock %}

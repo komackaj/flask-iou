@@ -1,0 +1,17 @@
+<nav>
+    <div class="nav-wrapper green darken-2">
+        <ul id="nav-common" class="left hide-on-med-and-down">
+            <li class="active"><a href="{{ url_for('index') }}">Dashboard</a></li>
+            <li><a href="{{ url_for('offers') }}">Offers</a></li>
+            <li><a href="{{ url_for('people') }}">People</a></li>
+        </ul>
+        <ul id="nav-user" class="hide-on-med-and-down right">
+            {% if current_user.is_authenticated %}
+                <li><a href="{{ url_for('transactions') }}">My Transactions</a></li>
+                <li><a href="{{ url_for('logout') }}" class="right">Logout</a></li>
+            {% else %}
+                <li><a href="{{ url_for('google.login') }}" class="right">Login</a></li>
+            {% endif %}
+        </ul>
+    </div>
+</nav>

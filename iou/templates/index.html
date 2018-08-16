@@ -1,48 +1,10 @@
-<!doctype html>
-<head>
-<title>IOU</title>
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-rc.2/css/materialize.min.css">
-<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-</head>
+{% extends 'layout.html' %}
 
-<body>
-<div class="container">
-
-<nav>
-    <div class="nav-wrapper green darken-2">
-        <ul id="nav-mobile" class="left hide-on-med-and-down">
-            <li class="active"><a href="#dashboard">Dashboard</a></li>
-            <li><a href="#offers">Offers</a></li>
-            <li><a href="#people">People</a></li>
-        </ul>
-        <ul id="nav-mobile" class="hide-on-med-and-down right">
-            {% if current_user.is_authenticated %}
-                <li><a href="#transactions">My Transactions</a></li>
-                <li><a href="{{ url_for('logout') }}" class="right">Logout</a></li>
-            {% else %}
-                <li><a href="{{ url_for('google.login') }}" class="right">Login</a></li>
-            {% endif %}
-        </ul>
-    </div>
-</nav>
-
-<div id="alerts" class="row">
-  {% for message in get_flashed_messages() %}
-    <div>{{ message }}</div>
-  {% endfor %}
-</section>
+{% block content %}
 
 {% if current_user.is_authenticated %}
-
-<span class="iou-status right right-align">
-    <b>Kredit</b>: 220
-</span>
-
-<div class="row">
-<h5>Activity</h5>
-No activity to show
-</div>
+    <h5>Activity</h5>
+    No activity to show
 
 {% else %}
 
@@ -52,7 +14,4 @@ No activity to show
 
 {% endif %}
 
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0-rc.2/js/materialize.min.js"></script>
-</div>
-</body>
+{% endblock %}

@@ -21,6 +21,22 @@ def create_tables():
 def index():
     return flask.render_template('index.html')
 
+@app.route('/offers')
+def offers():
+    return flask.render_template('offers.html')
+
+@app.route('/people')
+def people():
+    return flask.render_template('people.html')
+
+@app.route('/transactions')
+def transactions():
+    return flask.render_template('transactions.html')
+
+@app.route('/edit-offer')
+def edit_offer():
+    return flask.render_template('offer-form.html')
+
 @app.route('/user', methods=["GET", "POST"])
 def user():
     if app.testing and flask.request.method == "POST":
