@@ -14,6 +14,14 @@ class User(db.Model, UserMixin):
     def __repr__(self):
         return '<User %r>' % self.email
 
+    @classmethod
+    def getOrCreate(cls, email):
+        user = cls.query.filter_by(email=email).first()
+        if user is None:
+            user = cls(email=email)
+            db.session.add(user)
+            db.session.commit()
+        return user
 
 class OAuth(db.Model, OAuthConsumerMixin):
     __tablename__ = "flask_dance_oauth"

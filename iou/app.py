@@ -21,8 +21,13 @@ def create_tables():
 def index():
     return "IOU OK"
 
-@app.route('/user')
+@app.route('/user', methods=["GET", "POST"])
 def user():
+    if app.testing and flask.request.method == "POST":
+        from iou.login import google_logged_in
+        email = flask.request.json['email']
+        google_logged_in(None, email, app.testing)
+
     user = schemas['user'].dump(current_user)[0] if current_user.is_authenticated else None
     return flask.jsonify(user=user)
 
