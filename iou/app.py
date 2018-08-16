@@ -9,6 +9,8 @@ from iou.schemas import init_app_db, schemas
 
 app = flask.Flask(__name__)
 app.config.from_object("iou.config")
+if 'FLASK_IOU_SETTINGS' in os.environ:
+    app.config.from_envvar('FLASK_IOU_SETTINGS')
 init_app_db(app)
 
 def create_tables():
