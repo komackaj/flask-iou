@@ -12,7 +12,8 @@ class User(db.Model, UserMixin):
     email = db.Column(db.String(80), unique=True, nullable=False)
 
     def __repr__(self):
-        return '<User %r>' % self.name
+        return '<User %r>' % self.email
+
 
 class OAuth(db.Model, OAuthConsumerMixin):
     __tablename__ = "flask_dance_oauth"

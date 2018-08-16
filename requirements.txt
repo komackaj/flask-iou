@@ -1,7 +1,9 @@
 blinker
+flask>=1.0
 flask-dance
 flask-login
 flask-marshmallow
 flask-sqlalchemy
+marshmallow<3.0
 marshmallow-sqlalchemy
 sqlalchemy-utils
