@@ -5,7 +5,7 @@ Local exchange network platform based on trusted IOUs. Similar concept as [Villa
 Using dependencies from PyPi. Run from project root. Edit iou/config.py according to your needs (especially googleAuth section).
 ```bash
 $ pip3 install -r requirements.txt
-$ python3 -m unittest discover test
+$ python3 -m unittest discover tests
 $ ./iou.py --create-tables
 $ export OAUTHLIB_INSECURE_TRANSPORT=1
 $ export OAUTHLIB_RELAX_TOKEN_SCOPE=1
