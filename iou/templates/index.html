@@ -1,0 +1,17 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+
+{% if current_user.is_authenticated %}
+    <h5>Activity</h5>
+    No activity to show
+
+{% else %}
+
+    <section class="section">
+        <span>Nothing to show, <a href="{{ url_for('google.login') }}">login</a> to enable full access</span>
+    </section>
+
+{% endif %}
+
+{% endblock %}

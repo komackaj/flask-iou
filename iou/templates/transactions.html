@@ -1,0 +1,29 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+{% if current_user.is_authenticated %}
+
+<h5>My transactions</h5>
+<table class="striped">
+    <thead>
+        <tr>
+            <td>Paticipant</td>
+            <td>My offer</td>
+            <td>His offer</td>
+            <td>Completed</td>
+            <td>Credit after</td>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>user@test.com</td>
+            <td>Beer (2 pcs)</td>
+            <td>25 IOU</td>
+            <td>27.07.2018</td>
+            <td>235 IOU</td>
+        </tr>
+    </tbody>
+</table>
+
+{% endif %}
+{% endblock %}
