@@ -3,9 +3,10 @@ import traceback
 
 import flask
 from flask_login import login_required, current_user, logout_user
+import werkzeug.exceptions as HTTPException
 
-from iou.models import db
-from iou.schemas import init_app_db, schemas
+from iou.models import db, Offer
+from iou.schemas import init_app_db, schemas, Forbidden
 
 app = flask.Flask(__name__)
 app.config.from_object("iou.config")
@@ -16,6 +17,13 @@ init_app_db(app)
 def create_tables():
     with app.app_context():
         db.create_all()
+
+@app.route('/fakeLogin')
+def fakeLogin():
+    from iou.login import google_logged_in
+    email = flask.request.args['email']
+    google_logged_in(None, email, testing=True)
+    return "OK"
 
 @app.route('/')
 def index():
@@ -71,7 +79,22 @@ def schemaCreate(modelName):
 def schemaDetail(modelName, id):
     return schemaOrAbort(modelName).detail(id)
 
+@app.route('/api/offer/<int:id>/accept')
+def acceptOffer(id):
+    amount = flask.request.args.get('amount', default=None, type=int)
+    transaction = schemas['offer'].accept(id, amount)
+    return schemas['transaction'].jsonify(transaction)
+
 @app.errorhandler(Exception)
 def internal_server_error(error):
+    if isinstance(error, HTTPException.NotFound):
+        return flask.make_response(error, 404)
+
+    if isinstance(error, ValueError):
+        return flask.make_response(str(error), 400)
+
+    if isinstance(error, Forbidden):
+        return flask.make_response('Forbidden', 403)
+
     traceback.print_exc()
     return "Internal server error", 500
