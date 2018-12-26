@@ -3,6 +3,7 @@ import traceback
 
 import flask
 from flask_login import login_required, current_user, logout_user
+import sqlalchemy.orm.exc as saException
 import werkzeug.exceptions as HTTPException
 
 from iou.models import db, Offer
@@ -82,13 +83,18 @@ def schemaDetail(modelName, id):
 @app.route('/api/offer/<int:id>/accept')
 def acceptOffer(id):
     amount = flask.request.args.get('amount', default=None, type=int)
-    transaction = schemas['offer'].accept(id, amount)
-    return schemas['transaction'].jsonify(transaction)
+    transaction = schemaOrAbort('offer').accept(id, amount)
+    return schemaOrAbort('transaction').jsonify(transaction)
+
+@app.route('/api/offer/<int:id>/decline')
+def denyOffer(id):
+    schemaOrAbort('offer').deny(id)
+    return flask.make_response("No content", 204)
 
 @app.errorhandler(Exception)
 def internal_server_error(error):
-    if isinstance(error, HTTPException.NotFound):
-        return flask.make_response(error, 404)
+    if isinstance(error, (HTTPException.NotFound, saException.NoResultFound)):
+        return flask.make_response(HTTPException.NotFound(), 404)
 
     if isinstance(error, ValueError):
         return flask.make_response(str(error), 400)

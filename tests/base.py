@@ -26,7 +26,8 @@ class TestBase(unittest.TestCase):
     def call(self, endpoint, expectedStatus=200, **kwargs):
         response = self.client.post(endpoint, json=kwargs) if kwargs else self.client.get(endpoint)
         self.assertEqual(expectedStatus, response.status_code)
-        return json.loads(response.get_data(as_text=True)) if response.status_code < 300 else {}
+        hasData = response.status_code < 300 and response.status_code != 204
+        return json.loads(response.get_data(as_text=True)) if hasData else {}
 
     def createUser(self, email):
         userData = self.call('/api/user/', expectedStatus=201, email=email)

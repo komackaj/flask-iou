@@ -93,5 +93,24 @@ class OfferTest(TestBase):
             self.login('another@test.com')
             data = self.call('/api/offer/{}/accept'.format(offer['id']), expectedStatus=403)
 
+    def test_decline(self):
+        targetEmail = 'targetDecline@test.com'
+        with self.client:
+            ownerId = self.login('adminDecline@test.com')['id']
+            targetId = self.createUser(targetEmail)
+            offer = self.createOffer(ownerId, 'pizza', amount=1, price=15, targetId=targetId)
+            offerUrl = '/api/offer/{}'.format(offer['id'])
+            self.login(targetEmail)
+            self.call(offerUrl + '/decline', expectedStatus=204)
+            data = self.call(offerUrl, expectedStatus=404)
+
+    def test_decline_by_nontarget_denied(self):
+         with self.client:
+            ownerId = self.login('adminDeclineDenied@test.com')['id']
+            targetId = self.createUser('targetDeclineDenied@test.com')
+            offer = self.createOffer(ownerId, 'pizza', amount=1, price=17, targetId=targetId)
+            self.login('anotherDeclineDenied@test.com')
+            self.call('/api/offer/{}/decline'.format(offer['id']), expectedStatus=403)
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

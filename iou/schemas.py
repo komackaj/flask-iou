@@ -36,7 +36,7 @@ class SchemaBase(ma.ModelSchema):
         return self.jsonify(new_obj)
 
     def detail(self, id):
-        obj = self.Meta.model.query.get(id)
+        obj = self.Meta.model.query.filter_by(id=id).one()
         return self.jsonify(obj)
 
     def list(self):
@@ -56,7 +56,7 @@ class OfferSchema(SchemaBase):
         model = models.Offer
 
     class Permission:
-        accept = 'target'
+        accept = deny = 'target'
 
     def accept(self, id, amount=None):
         # convert offer to transaction
@@ -81,6 +81,12 @@ class OfferSchema(SchemaBase):
         models.db.session.add(transaction)
         models.db.session.commit()
         return transaction
+
+    def deny(self, id):
+        offer = self.Meta.model.query.get(id)
+        self.validate(offer, 'deny')
+        models.db.session.delete(offer)
+        models.db.session.commit()
 
 class TransactionSchema(SchemaBase):
     class Meta:
