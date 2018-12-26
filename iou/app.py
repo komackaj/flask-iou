@@ -107,7 +107,7 @@ def internal_server_error(error):
         return HTTPException.NotFound()
 
     if isinstance(error, ValueError):
-        return HTTPException.BadArgument()
+        return HTTPException.BadRequest()
 
     traceback.print_exc()
     return "Internal server error", 500
