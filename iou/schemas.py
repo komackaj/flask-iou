@@ -5,10 +5,10 @@ import iou.login as login
 
 from flask_marshmallow import Marshmallow
 from flask_login import current_user
+import werkzeug.exceptions as HTTPException
 
 ma = Marshmallow()
 
-class Forbidden(Exception): pass
 
 def init_app_db(app):
     models.db.init_app(app)
@@ -27,7 +27,7 @@ class SchemaBase(ma.ModelSchema):
 
         owners = [getattr(obj, field) for field in ownerFields]
         if all(current_user!=owner for owner in owners):
-            raise Forbidden
+            raise HTTPException.Forbidden()
 
     def create(self, data):
         new_obj = self.make_instance(data)

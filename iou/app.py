@@ -7,7 +7,7 @@ import sqlalchemy.orm.exc as saException
 import werkzeug.exceptions as HTTPException
 
 from iou.models import db, Offer
-from iou.schemas import init_app_db, schemas, Forbidden
+from iou.schemas import init_app_db, schemas
 
 app = flask.Flask(__name__)
 app.config.from_object("iou.config")
@@ -65,6 +65,8 @@ def logout():
 def schemaOrAbort(modelName):
     if modelName not in schemas:
         flask.abort(404)
+    if flask.request.method == 'POST' and modelName == 'transaction':
+        flask.abort(403)
     return schemas[modelName]
 
 @app.route('/api/<modelName>/', methods=['GET'])
@@ -93,14 +95,14 @@ def denyOffer(id):
 
 @app.errorhandler(Exception)
 def internal_server_error(error):
-    if isinstance(error, (HTTPException.NotFound, saException.NoResultFound)):
-        return flask.make_response(HTTPException.NotFound(), 404)
+    if isinstance(error, HTTPException.HTTPException):
+        return error
+
+    if isinstance(error, saException.NoResultFound):
+        return HTTPException.NotFound()
 
     if isinstance(error, ValueError):
-        return flask.make_response(str(error), 400)
-
-    if isinstance(error, Forbidden):
-        return flask.make_response('Forbidden', 403)
+        return HTTPException.BadArgument()
 
     traceback.print_exc()
     return "Internal server error", 500
