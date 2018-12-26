@@ -74,7 +74,7 @@ class OfferTest(TestBase):
 
     def test_partial_accept(self):
          with self.client:
-            targetEmail = 'client@test.com'
+            targetEmail = 'client_partial@test.com'
             ownerId = self.login('admin@test.com')['id']
             targetId = self.createUser(targetEmail)
             offer = self.createOffer(ownerId, 'coffee', amount=500, price=5, targetId=targetId)
@@ -84,6 +84,11 @@ class OfferTest(TestBase):
             self.assertEqual(transaction['amount'], 200)
             offer = self.call(offerUrl)
             self.assertEqual(offer['amount'], 300)
+
+            # exhaust
+            transaction = self.call(offerUrl + '/accept', amount=300)
+            self.assertEqual(transaction['amount'], 300)
+            self.call(offerUrl, expectedStatus=404)
 
     def test_accept_by_nontarget_denied(self):
          with self.client:
