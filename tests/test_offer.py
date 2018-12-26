@@ -56,7 +56,7 @@ class OfferTest(TestBase):
             self.assertEqual(targetId, loggedIn)
 
             # accept it
-            transaction = self.call('/api/offer/{}/accept'.format(offer['id']))
+            transaction = self.call('/api/offer/{}/accept'.format(offer['id']), data=None)
 
             # offer is removed
             self.call('/api/offer/{}/'.format(offer['id']), expectedStatus=404)
@@ -79,8 +79,8 @@ class OfferTest(TestBase):
             targetId = self.createUser(targetEmail)
             offer = self.createOffer(ownerId, 'coffee', amount=500, price=5, targetId=targetId)
             self.login(targetEmail)
-            offerUrl = '/api/offer/{}/accept'.format(offer['id'])
-            transaction = self.call(offerUrl + '?amount=200')
+            offerUrl = '/api/offer/{}'.format(offer['id'])
+            transaction = self.call(offerUrl + '/accept', amount=200)
             self.assertEqual(transaction['amount'], 200)
             offer = self.call(offerUrl)
             self.assertEqual(offer['amount'], 300)
@@ -91,7 +91,7 @@ class OfferTest(TestBase):
             targetId = self.createUser('target@test.com')
             offer = self.createOffer(ownerId, 'pizza', amount=1, price=15, targetId=targetId)
             self.login('another@test.com')
-            data = self.call('/api/offer/{}/accept'.format(offer['id']), expectedStatus=403)
+            data = self.call('/api/offer/{}/accept'.format(offer['id']), expectedStatus=403, data=None)
 
     def test_decline(self):
         targetEmail = 'targetDecline@test.com'
@@ -101,7 +101,7 @@ class OfferTest(TestBase):
             offer = self.createOffer(ownerId, 'pizza', amount=1, price=15, targetId=targetId)
             offerUrl = '/api/offer/{}'.format(offer['id'])
             self.login(targetEmail)
-            self.call(offerUrl + '/decline', expectedStatus=204)
+            self.call(offerUrl + '/decline', expectedStatus=204, data=None)
             data = self.call(offerUrl, expectedStatus=404)
 
     def test_decline_by_nontarget_denied(self):
@@ -110,7 +110,7 @@ class OfferTest(TestBase):
             targetId = self.createUser('targetDeclineDenied@test.com')
             offer = self.createOffer(ownerId, 'pizza', amount=1, price=17, targetId=targetId)
             self.login('anotherDeclineDenied@test.com')
-            self.call('/api/offer/{}/decline'.format(offer['id']), expectedStatus=403)
+            self.call('/api/offer/{}/decline'.format(offer['id']), expectedStatus=403, data=None)
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)

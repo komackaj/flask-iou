@@ -87,13 +87,13 @@ def schemaCreate(modelName):
 def schemaDetail(modelName, id):
     return schemaOrAbort(modelName).detail(id)
 
-@app.route('/api/offer/<int:id>/accept')
+@app.route('/api/offer/<int:id>/accept', methods=['POST'])
 def acceptOffer(id):
-    amount = flask.request.args.get('amount', default=None, type=int)
+    amount = flask.request.json.get('amount')
     transaction = schemaOrAbort('offer').accept(id, amount)
-    return schemaOrAbort('transaction').jsonify(transaction)
+    return schemas['transaction'].jsonify(transaction)
 
-@app.route('/api/offer/<int:id>/decline')
+@app.route('/api/offer/<int:id>/decline', methods=['POST'])
 def denyOffer(id):
     schemaOrAbort('offer').deny(id)
     return flask.make_response("No content", 204)
