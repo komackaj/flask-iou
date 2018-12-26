@@ -59,16 +59,7 @@
         }
 
         let url = "{{url_for('schemaCreate', modelName='offer')}}";
-        let options = {
-            method: "POST",
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data)
-        };
-
-        fetch(url, options).then(response => {
+        postJson(url, data).then(response => {
             return response.json()
         }).then(result => {
             console.log(result);

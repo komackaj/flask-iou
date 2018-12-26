@@ -49,3 +49,16 @@ function formData(form) {
     }
     return ret;
 }
+
+function postJson(url, data) {
+    let options = {
+        method: "POST",
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    };
+
+    return fetch(url, options);
+}

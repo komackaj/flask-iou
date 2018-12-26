@@ -32,8 +32,8 @@
                 <td>{{offer.item}} ({{offer.amount}} pcs)</td>
                 <td>{{offer.price}} IOU</td>
                 <td>
-                    <a class="waves-effect waves-light btn green" href="#">Accept</a>
-                    <a class="waves-effect waves-light btn purple darken-2" href="#">Decline</a>
+                    <a class="waves-effect waves-light btn green" href="#" onclick='accept(this, {{offer.id}})'>Accept</a>
+                    <a class="waves-effect waves-light btn purple darken-2" href="#" onclick='decline({{offer.id}})'>Decline</a>
                 </td>
             </tr>
             {% endfor %}
@@ -94,7 +94,7 @@
             </td>
             <td>{{offer.price}} IOU</td>
             <td>
-                <a class="waves-effect waves-light btn green" href="#">Accept</a>
+                <a class="waves-effect waves-light btn green" href="#" onclick='accept(this, {{offer.id}}, true)'>Accept</a>
             </td>
         </tr>
         {% endfor %}
@@ -102,4 +102,29 @@
 </table>
 </div>
 
+<script>
+
+function do_offer_action(offerId, action, data) {
+    let url = '/api/offer/' + offerId + '/' + action;
+    postJson(url, data).then(response => {
+        if (response.length)
+            return response.json()
+    }).then(result => {
+        window.location.reload();
+    });
+}
+
+function accept(elm, offerId, resolveAmount) {
+    let data = {id: offerId}
+    if (resolveAmount) {
+        data.amount = +elm.parentElement.parentElement.querySelector('.amountSpinner').value;
+    }
+    do_offer_action(offerId, 'accept', data);
+}
+
+function decline(offerId) {
+    do_offer_action(offerId, 'decline', {});
+}
+
+</script>
 {% endblock %}
