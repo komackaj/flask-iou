@@ -2,11 +2,13 @@
 
 {% block content %}
 
+{% include 'offer-form.html' %}
+
 <h5>Offers</h5>
 
 {% if current_user.id == 1%}
     <div class="section">
-      <a class="waves-effect waves-light btn green" href="{{ url_for('edit_offer') }}">Create</a>
+      <a class="waves-effect waves-light btn green modal-trigger" href="#offerFormModal">Create</a>
     </div>
 {% endif %}
 

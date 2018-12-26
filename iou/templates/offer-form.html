@@ -1,12 +1,84 @@
-{% extends 'layout.html' %}
+<div id="offerFormModal" class="modal">
+    <div class="modal-content">
 
-{% block content %}
+        <h5>Create offer</h5>
+        <div class="row">
+            <form id="offerForm" class="col s6">
+            <input id="ownerId" name="ownerId" value="{{ current_user.id }}" hidden="1"></input>
 
-{% if current_user.id == 1%}
-    <h5>Create offer</h5>
-    <form class="section">
-      TODO:form
-    </form>
-{% endif %}
+            <div class="input-field">
+                <input id="item" name="item" type="text" class="validate" placeholder="What to offer" required></input>
+                <label for="item">Item</label>
+            </div>
 
-{% endblock %}
+            <div class="input-field">
+                <input id="amount" name="amount" type="number" min="1" value="1"></input>
+                <label for="amount">Amount</label>
+            </div>
+
+            <div class="input-field">
+                <input id="price" name="price" type="number" min="1" value="1"></input>
+                <label for="price">Price per piece</label>
+            </div>
+
+            <div class="input-field">
+                <select id="targetId" name="targetId">
+                <option value="-1" selected>Anyone</option>
+                <option value="1">admin</option>
+                </select>
+                <label for="targetId">Offer to</label>
+            </div>
+
+            <div class="input-field">
+                <button type="submit" onclick="return handleForm();" class="waves-effect waves-light btn green"> Create offer </button>
+            </div>
+            </form>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var elems = document.querySelectorAll('select');
+        var instances = M.FormSelect.init(elems, {});
+        var elems = document.querySelectorAll('.modal');
+        var instances = M.Modal.init(elems, {});
+    });
+
+    function handleForm() {
+        let form = document.getElementById("offerForm");
+        if (!form.checkValidity())
+            return;
+
+        let data = formData(form);
+        if (data.targetId < 0) {
+            delete data['targetId'];
+        }
+
+        let url = "{{url_for('schemaCreate', modelName='offer')}}";
+        let options = {
+            method: "POST",
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
+        };
+
+        fetch(url, options).then(response => {
+            return response.json()
+        }).then(result => {
+            console.log(result);
+
+            let modal = document.getElementById('offerFormModal');
+            let instance = M.Modal.getInstance(modal);
+            instance.close();
+
+            //TODO: emit event with result data, do not reload
+            window.location.reload();
+        });
+        return false;
+    }
+</script>
+

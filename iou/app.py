@@ -75,7 +75,8 @@ def schemaList(modelName):
 
 @app.route('/api/<modelName>/', methods=['POST'])
 def schemaCreate(modelName):
-    data = schemaOrAbort(modelName).create(flask.request.json)
+    inData = flask.request.json or flask.request.form.to_dict()
+    data = schemaOrAbort(modelName).create(inData)
     return flask.make_response(data, 201)
 
 @app.route('/api/<modelName>/<int:id>')
