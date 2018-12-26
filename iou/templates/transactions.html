@@ -1,15 +1,23 @@
 {% extends 'layout.html' %}
 
 {% block content %}
+
+
+<ul><b>TODO</b>
+<li>Participant as email</li>
+</ul>
+
+
 {% if current_user.is_authenticated %}
 
 <h5>My transactions</h5>
 <table class="striped">
     <thead>
         <tr>
+            <td>Action</td>
             <td>Paticipant</td>
-            <td>My offer</td>
-            <td>His offer</td>
+            <td>Item</td>
+            <td>Price</td>
             <td>Completed</td>
             <td>Credit after</td>
         </tr>
@@ -22,10 +30,11 @@
         var row = domCreate({
             el: 'tr',
             child: [
+                {el: 'td', text: {{current_user.id}} == data.owner ? "Sell" : "Buy"},
                 {el: 'td', text: data.target},
                 {el: 'td', text: data.item + " (" + data.amount + " pcs)"},
                 {el: 'td', text: data.price + " IOU"},
-                {el: 'td', text: data.timestamp},
+                {el: 'td', text: new Date(data.timestamp).toGMTString()},
                 {el: 'td', text: "220 IOU"},
             ]
         });
