@@ -32,7 +32,10 @@ def index():
 
 @app.route('/offers')
 def offers():
-    return flask.render_template('offers.html')
+    params = {
+        'offers': Offer.query.all(),
+    }
+    return flask.render_template('offers.html', **params)
 
 @app.route('/people')
 def people():
