@@ -34,6 +34,7 @@ def index():
 def offers():
     params = {
         'offers': Offer.query.all(),
+        'users' : User.query.all(),
     }
     return flask.render_template('offers.html', **params)
 

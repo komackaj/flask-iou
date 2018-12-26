@@ -24,7 +24,9 @@
             <div class="input-field">
                 <select id="targetId" name="targetId">
                 <option value="-1" selected>Anyone</option>
-                <option value="1">admin</option>
+                {% for user in users if user != current_user %}
+                    <option value="{{user.id}}">{{user.email}}</option>
+                {% endfor %}
                 </select>
                 <label for="targetId">Offer to</label>
             </div>
