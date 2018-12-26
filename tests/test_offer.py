@@ -93,6 +93,13 @@ class OfferTest(TestBase):
             self.login('another@test.com')
             data = self.call('/api/offer/{}/accept'.format(offer['id']), expectedStatus=403, data=None)
 
+    def test_accept_without_target(self):
+         with self.client:
+            ownerId = self.login('admin@test.com')['id']
+            offer = self.createOffer(ownerId, 'pizza', amount=1, price=17)
+            self.login('another@test.com')
+            data = self.call('/api/offer/{}/accept'.format(offer['id']), data=None)
+
     def test_decline(self):
         targetEmail = 'targetDecline@test.com'
         with self.client:

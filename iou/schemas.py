@@ -63,7 +63,8 @@ class OfferSchema(SchemaBase):
         # specify amount for partial accept
 
         offer = self.Meta.model.query.get(id)
-        self.validate(offer, 'accept')
+        if offer.target:
+            self.validate(offer, 'accept')
 
         if amount is not None:
             if amount <= 0:
