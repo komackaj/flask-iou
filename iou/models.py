@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from datetime import datetime
+
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import UserMixin, current_user
 from flask_dance.consumer.backend.sqla import OAuthConsumerMixin, SQLAlchemyBackend
@@ -28,6 +30,42 @@ class OAuth(db.Model, OAuthConsumerMixin):
 
     user_id = db.Column(db.Integer, db.ForeignKey(User.id))
     user = db.relationship(User)
+
+class Offer(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    item = db.Column(db.String)
+    amount = db.Column(db.Integer)
+    price = db.Column(db.Integer)
+    ownerId = db.Column(db.Integer, db.ForeignKey(User.id), nullable=False)
+    owner = db.relationship(User, foreign_keys=(ownerId,), backref='offers')
+    targetId = db.Column(db.Integer, db.ForeignKey(User.id))
+    target = db.relationship(User, foreign_keys=(targetId,), backref='offered')
+
+    def __repr__(self):
+        return '<Offer {0.id} by {0.ownerId}: {0.amount} {0.item} for {0.price} per pcs>'.format(self)
+
+class Transaction(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    item = db.Column(db.String)
+    amount = db.Column(db.Integer)
+    price = db.Column(db.Integer)
+    timestamp = db.Column(db.DateTime)
+    ownerId = db.Column(db.Integer, db.ForeignKey(User.id), nullable=False)
+    owner = db.relationship(User, foreign_keys=(ownerId,), backref='owned_transactions')
+    targetId = db.Column(db.Integer, db.ForeignKey(User.id))
+    target = db.relationship(User, foreign_keys=(targetId,), backref='accepted_transactions')
+
+    def __repr__(self):
+        return '<Transaction {0.id} by {0.ownerId}: {0.amount} {0.item} for {0.price} per pcs, {0.timestamp}>'.format(self)
+
+    @classmethod
+    def fromOffer(cls, offer):
+        result = cls()
+        for key in ('item', 'amount', 'price', 'ownerId', 'targetId'):
+            val = getattr(offer, key)
+            setattr(result, key, val)
+        result.timestamp = datetime.now()
+        return result
 
 # TODO: use cache as per https://flask-dance.readthedocs.io/en/latest/backends.html#sqlalchemy
 danceAlchemyBackend = SQLAlchemyBackend(OAuth, db.session, user=current_user)
