@@ -6,7 +6,7 @@ from flask_login import login_required, current_user, logout_user
 import sqlalchemy.orm.exc as saException
 import werkzeug.exceptions as HTTPException
 
-from iou.models import db, Offer
+from iou.models import db, Offer, User
 from iou.schemas import init_app_db, schemas
 
 app = flask.Flask(__name__)
@@ -36,7 +36,7 @@ def offers():
 
 @app.route('/people')
 def people():
-    return flask.render_template('people.html')
+    return flask.render_template('people.html', users=User.query.all())
 
 @app.route('/transactions')
 def transactions():
