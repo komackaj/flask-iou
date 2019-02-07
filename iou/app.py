@@ -94,8 +94,8 @@ def acceptOffer(id):
     return schemas['transaction'].jsonify(transaction)
 
 @app.route('/api/offer/<int:id>/decline', methods=['POST'])
-def denyOffer(id):
-    schemaOrAbort('offer').deny(id)
+def declineOffer(id):
+    schemaOrAbort('offer').decline(id)
     return flask.make_response("No content", 204)
 
 @app.errorhandler(Exception)

@@ -56,7 +56,7 @@ class OfferSchema(SchemaBase):
         model = models.Offer
 
     class Permission:
-        accept = deny = 'target'
+        accept = decline = 'target'
 
     def accept(self, id, amount=None):
         # convert offer to transaction
@@ -83,9 +83,9 @@ class OfferSchema(SchemaBase):
         models.db.session.commit()
         return transaction
 
-    def deny(self, id):
+    def decline(self, id):
         offer = self.Meta.model.query.get(id)
-        self.validate(offer, 'deny')
+        self.validate(offer, 'decline')
         models.db.session.delete(offer)
         models.db.session.commit()
 
