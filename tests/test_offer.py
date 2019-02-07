@@ -72,6 +72,22 @@ class OfferTest(TestBase):
 
             # TODO: check credit
 
+    def test_accept_offer_without_target_has_target_in_transaction(self):
+        with self.client:
+            ownerId = self.login('owner_AOWT@test.com')['id']
+            offer = self.createOffer(ownerId, 'tapas', amount=5, price=3)
+            self.assertIsNone(offer['target'])
+            offerUrl = '/api/offer/{}'.format(offer['id'])
+
+            targetId = self.login('target_AOWT@test.com')['id']
+            transaction = self.call(offerUrl + '/accept', amount=2)
+            self.assertEqual(transaction['target'], targetId)
+            self.assertEqual(transaction['amount'], 2)
+
+            remainingOffer = self.call(offerUrl)
+            self.assertIsNone(remainingOffer['target'], None)
+            self.assertEqual(remainingOffer['amount'], 3)
+
     def test_partial_accept(self):
          with self.client:
             targetEmail = 'client_partial@test.com'

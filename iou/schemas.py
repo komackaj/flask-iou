@@ -74,6 +74,8 @@ class OfferSchema(SchemaBase):
                 raise ValueError("Invalid amount - can accept up to {}".format(offer.amount))
 
         transaction = models.Transaction.fromOffer(offer)
+        if transaction.targetId is None:
+            transaction.target = current_user
         if amount and amount < offer.amount:
             offer.amount -= amount
             transaction.amount = amount
