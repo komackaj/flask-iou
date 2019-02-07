@@ -12,17 +12,17 @@
             </div>
 
             <div class="input-field">
-                <input id="amount" name="amount" type="number" min="1" value="1"></input>
+                <input id="amount" name="amount" type="number" min="1" value="1" autocomplete="off"></input>
                 <label for="amount">Amount</label>
             </div>
 
             <div class="input-field">
-                <input id="price" name="price" type="number" min="1" value="1"></input>
+                <input id="price" name="price" type="number" min="1" value="1" autocomplete="off"></input>
                 <label for="price">Price per piece</label>
             </div>
 
             <div class="input-field">
-                <select id="targetId" name="targetId">
+                <select id="targetId" name="targetId" autocomplete="off">
                 <option value="-1" selected>Anyone</option>
                 {% for user in users if user != current_user %}
                     <option value="{{user.id}}">{{user.email}}</option>
