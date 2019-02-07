@@ -124,5 +124,21 @@ class OfferTest(TestBase):
             self.login('anotherDeclineDenied@test.com')
             self.call('/api/offer/{}/decline'.format(offer['id']), expectedStatus=403, data=None)
 
+    def test_remove(self):
+        with self.client:
+            ownerId = self.login('adminRemove@test.com')['id']
+            offer = self.createOffer(ownerId, 'cake', amount=10, price=11)
+            offerUrl = '/api/offer/{}'.format(offer['id'])
+            self.call(offerUrl + '/remove', expectedStatus=204, data=None)
+            data = self.call(offerUrl, expectedStatus=404)
+
+    def test_remove_by_target_denied(self):
+         with self.client:
+            ownerId = self.login('adminRemoveDenied@test.com')['id']
+            targetId = self.createUser('anotherRemoveDenied@test.com')
+            offer = self.createOffer(ownerId, 'cake', amount=5, price=7, targetId=targetId)
+            self.login('anotherRemoveDenied@test.com')
+            self.call('/api/offer/{}/remove'.format(offer['id']), expectedStatus=403, data=None)
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

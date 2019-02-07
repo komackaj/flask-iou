@@ -98,6 +98,11 @@ def declineOffer(id):
     schemaOrAbort('offer').decline(id)
     return flask.make_response("No content", 204)
 
+@app.route('/api/offer/<int:id>/remove', methods=['POST'])
+def removeOffer(id):
+    schemaOrAbort('offer').remove(id)
+    return flask.make_response("No content", 204)
+
 @app.errorhandler(Exception)
 def internal_server_error(error):
     if isinstance(error, HTTPException.HTTPException):
