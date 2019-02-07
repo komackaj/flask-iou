@@ -57,6 +57,7 @@ function postJson(url, data) {
             'Accept': 'application/json',
             'Content-Type': 'application/json'
         },
+        credentials: 'same-origin',
         body: JSON.stringify(data)
     };
 
