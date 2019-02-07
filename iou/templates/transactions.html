@@ -2,12 +2,6 @@
 
 {% block content %}
 
-
-<ul><b>TODO</b>
-<li>Participant as email</li>
-</ul>
-
-
 {% if current_user.is_authenticated %}
 
 <h5>My transactions</h5>
@@ -15,7 +9,7 @@
     <thead>
         <tr>
             <td>Action</td>
-            <td>Paticipant</td>
+            <td>From/To</td>
             <td>Item</td>
             <td>Price</td>
             <td>Completed</td>
@@ -26,12 +20,14 @@
 </table>
 
 <script>
-    function buildRow(parent, data) {
+    function buildRow(parent, data, users) {
+        var isOwner = {{current_user.id}} == data.owner;
+        var participantId = isOwner ? data.target : data.owner;
         var row = domCreate({
             el: 'tr',
             child: [
-                {el: 'td', text: {{current_user.id}} == data.owner ? "Sell" : "Buy"},
-                {el: 'td', text: data.target},
+                {el: 'td', text: isOwner ? "Sell" : "Buy"},
+                {el: 'td', text: users[participantId].email},
                 {el: 'td', text: data.item + " (" + data.amount + " pcs)"},
                 {el: 'td', text: data.price + " IOU"},
                 {el: 'td', text: new Date(data.timestamp).toGMTString()},
@@ -41,15 +37,27 @@
         parent.appendChild(row);
     }
 
-    var url = '{{url_for('schemaList', modelName='transaction')}}';
+    var url = "{{url_for('schemaList', modelName='user')}}";
     fetch(url).then(response => {
        return response.json()
     }).then(data => {
-        var tableBody = document.getElementById('rows');
-        for (let row of data) {
-            buildRow(tableBody, row);
+        var users = {};
+        for (let user of data) {
+            users[user.id] = user;
         }
-    })
+
+        console.log(users);
+
+        var url = "{{url_for('schemaList', modelName='transaction')}}";
+        fetch(url).then(response => {
+            return response.json()
+        }).then(data => {
+            var tableBody = document.getElementById('rows');
+            for (let row of data) {
+                buildRow(tableBody, row, users);
+            }
+        });
+   });
 
 </script>
 {% endif %}
