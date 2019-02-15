@@ -82,6 +82,8 @@ class OfferSchema(SchemaBase):
         else:
             models.db.session.delete(offer)
 
+        current_user.credit -= transaction.amount * transaction.price
+
         models.db.session.add(transaction)
         models.db.session.commit()
         return transaction
