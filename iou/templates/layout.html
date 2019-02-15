@@ -17,7 +17,7 @@
 
 {% if current_user.is_authenticated %}
     <span class="iou-status right right-align">
-        <b>TODO - Credit</b>: 220
+        <b>Credit</b>: {{current_user.credit}} IOU
     </span>
 {% endif %}
 

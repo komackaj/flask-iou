@@ -13,7 +13,6 @@
             <td>Item</td>
             <td>Price</td>
             <td>Completed</td>
-            <td>Credit after</td>
         </tr>
     </thead>
     <tbody id='rows' />
@@ -31,7 +30,6 @@
                 {el: 'td', text: data.item + " (" + data.amount + " pcs)"},
                 {el: 'td', text: data.price + " IOU"},
                 {el: 'td', text: new Date(data.timestamp).toGMTString()},
-                {el: 'td', text: "220 IOU"},
             ]
         });
         parent.appendChild(row);
