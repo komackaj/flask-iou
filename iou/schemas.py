@@ -56,14 +56,16 @@ class OfferSchema(SchemaBase):
         model = models.Offer
 
     class Permission:
-        accept = deny = 'target'
+        accept = decline = 'target'
+        remove = 'owner'
 
     def accept(self, id, amount=None):
         # convert offer to transaction
         # specify amount for partial accept
 
         offer = self.Meta.model.query.get(id)
-        self.validate(offer, 'accept')
+        if offer.target:
+            self.validate(offer, 'accept')
 
         if amount is not None:
             if amount <= 0:
@@ -72,7 +74,9 @@ class OfferSchema(SchemaBase):
                 raise ValueError("Invalid amount - can accept up to {}".format(offer.amount))
 
         transaction = models.Transaction.fromOffer(offer)
-        if amount:
+        if transaction.targetId is None:
+            transaction.target = current_user
+        if amount and amount < offer.amount:
             offer.amount -= amount
             transaction.amount = amount
         else:
@@ -82,11 +86,17 @@ class OfferSchema(SchemaBase):
         models.db.session.commit()
         return transaction
 
-    def deny(self, id):
+    def _checkAndRemove(self, id, action):
         offer = self.Meta.model.query.get(id)
-        self.validate(offer, 'deny')
+        self.validate(offer, action)
         models.db.session.delete(offer)
         models.db.session.commit()
+
+    def decline(self, id):
+        self._checkAndRemove(id, 'decline')
+
+    def remove(self, id):
+        self._checkAndRemove(id, 'remove')
 
 class TransactionSchema(SchemaBase):
     class Meta:

@@ -2,45 +2,102 @@
 
 {% block content %}
 
+{% include 'offer-form.html' %}
+
 <h5>Offers</h5>
 
-{% if current_user.id == 1%}
+{% if current_user.is_authenticated %}
+
+    {% if current_user.id == 1%}
+        <div class="section">
+        <a class="waves-effect waves-light btn green modal-trigger" href="#offerFormModal">Create</a>
+        </div>
+    {% endif %}
+
+    {% set offeredToMe = offers|selectattr('target','eq',current_user)|list %}
+    {% set offeredByMe = offers|selectattr('owner', 'eq',current_user)|list %}
+
     <div class="section">
-      <a class="waves-effect waves-light btn green" href="{{ url_for('edit_offer') }}">Create</a>
+        <h5>Offered to me</h5>
+
+        {% if offeredToMe %}
+            <table class="striped">
+                <thead>
+                    <tr>
+                        <td>Offered by</td>
+                        <td>Offers</td>
+                        <td>Requests</td>
+                        <td>Actions</td>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for offer in offeredToMe %}
+                    <tr>
+                        <td>{{offer.owner.email}}</td>
+                        <td>{{offer.item}} ({{offer.amount}} pcs)</td>
+                        <td>{{offer.price}} IOU</td>
+                        <td>
+                            <a class="waves-effect waves-light btn green" href="#" onclick='accept(this, {{offer.id}})'>Accept</a>
+                            <a class="waves-effect waves-light btn purple darken-2" href="#" onclick='decline({{offer.id}})'>Decline</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <span>No offer</span>
+        {% endif %}
+
     </div>
+
+    <div class="section">
+    <h5>Offered by me</h5>
+
+    {% if offeredByMe %}
+        <table class="striped">
+            <thead>
+                <tr>
+                    <td>Item</td>
+                    <td>Amount</td>
+                    <td>Price per piece</td>
+                    <td>Offered to</td>
+                    <td>Actions</td>
+                </tr>
+            </thead>
+            <tbody>
+                {% for offer in offeredByMe %}
+                <tr>
+                    <td>{{offer.item}}</td>
+                    <td>{{offer.amount}} pcs</td>
+                    <td>{{offer.price}} IOU</td>
+                    <td>{{offer.target.email if offer.target else ""}}</td>
+                    <td>
+                        <a class="waves-effect waves-light btn green" href="{{ url_for('edit_offer') }}?id=1" disabled=1">Edit</a>
+                        <a class="waves-effect waves-light btn purple darken-2" href="#" onclick='remove({{offer.id}})'>Remove</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <span>No offer</span>
+    {% endif %}
+
+    </div>
+
 {% endif %}
 
-{% if current_user.is_authenticated %}
-    <div class="section">
-    <h5>Offered to me</h5>
+<div class="section">
+<h5>Free offers</h5>
+
+{% set offeredToAnyone = offers|rejectattr('owner','eq',current_user)|selectattr('target','none')|list %}
+
+{% if offeredToAnyone %}
     <table class="striped">
         <thead>
             <tr>
                 <td>Offered by</td>
-                <td>Offers</td>
-                <td>Requests</td>
-                <td>Actions</td>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>user@test.com</td>
-                <td>Beer (2 pcs)</td>
-                <td>25 IOU</td>
-                <td>
-                    <a class="waves-effect waves-light btn green" href="#">Accept</a>
-                    <a class="waves-effect waves-light btn purple darken-2" href="#">Decline</a>
-                </td>
-            </tr>
-        </tbody>
-    </table>
-    </div>
-
-    <div class="section">
-    <h5>My offers</h5>
-    <table class="striped">
-        <thead>
-            <tr>
                 <td>Item</td>
                 <td>Amount</td>
                 <td>Price per piece</td>
@@ -48,47 +105,56 @@
             </tr>
         </thead>
         <tbody>
+            {% for offer in offeredToAnyone %}
             <tr>
-                <td>Beer</td>
-                <td>2 pcs</td>
-                <td>15 IOU</td>
+                <td>{{offer.owner.email}}</td>
+                <td>{{offer.item}}</td>
                 <td>
-                    <a class="waves-effect waves-light btn green" href="{{ url_for('edit_offer') }}?id=1">Edit</a>
-                    <a class="waves-effect waves-light btn purple darken-2" href="#">Remove</a>
+                    <input class="amountSpinner" type="number" min="1" max="{{offer.amount}}" value="{{offer.amount}}" autocomplete="off">
+                </td>
+                <td>{{offer.price}} IOU</td>
+                <td>
+                    {% if current_user.is_authenticated %}
+                    <a class="waves-effect waves-light btn green" href="#" onclick='accept(this, {{offer.id}}, true)'>Accept</a>
+                    {% endif %}
                 </td>
             </tr>
+            {% endfor %}
         </tbody>
     </table>
-    </div>
-
+{% else %}
+    <span>No offer</span>
 {% endif %}
 
-<div class="section">
-<h5>All offers</h5>
-<table class="striped">
-    <thead>
-        <tr>
-            <td>Offered by</td>
-            <td>Offers</td>
-            <td>Amount</td>
-            <td>Price per piece</td>
-            <td>Actions</td>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td>user@test.com</td>
-            <td>Beer</td>
-            <td>
-                <input class="amountSpinner" type="number" min="1" max="3" value="3">
-            </td>
-            <td>15 IOU</td>
-            <td>
-                <a class="waves-effect waves-light btn green" href="#">Accept</a>
-            </td>
-        </tr>
-    </tbody>
-</table>
 </div>
 
+<script>
+
+function do_offer_action(offerId, action, data) {
+    let url = '/api/offer/' + offerId + '/' + action;
+    postJson(url, data).then(response => {
+        if (response.length)
+            return response.json()
+    }).then(result => {
+        window.location.reload();
+    });
+}
+
+function accept(elm, offerId, resolveAmount) {
+    let data = {id: offerId}
+    if (resolveAmount) {
+        data.amount = +elm.parentElement.parentElement.querySelector('.amountSpinner').value;
+    }
+    do_offer_action(offerId, 'accept', data);
+}
+
+function decline(offerId) {
+    do_offer_action(offerId, 'decline', {});
+}
+
+function remove(offerId) {
+    do_offer_action(offerId, 'remove', {});
+}
+
+</script>
 {% endblock %}

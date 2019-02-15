@@ -37,9 +37,9 @@ class Offer(db.Model):
     amount = db.Column(db.Integer)
     price = db.Column(db.Integer)
     ownerId = db.Column(db.Integer, db.ForeignKey(User.id), nullable=False)
-    owner = db.relationship(User, foreign_keys=(ownerId,), backref='offers')
+    owner = db.relationship(User, foreign_keys=(ownerId,))
     targetId = db.Column(db.Integer, db.ForeignKey(User.id))
-    target = db.relationship(User, foreign_keys=(targetId,), backref='offered')
+    target = db.relationship(User, foreign_keys=(targetId,))
 
     def __repr__(self):
         return '<Offer {0.id} by {0.ownerId}: {0.amount} {0.item} for {0.price} per pcs>'.format(self)
@@ -51,9 +51,9 @@ class Transaction(db.Model):
     price = db.Column(db.Integer)
     timestamp = db.Column(db.DateTime)
     ownerId = db.Column(db.Integer, db.ForeignKey(User.id), nullable=False)
-    owner = db.relationship(User, foreign_keys=(ownerId,), backref='owned_transactions')
+    owner = db.relationship(User, foreign_keys=(ownerId,))
     targetId = db.Column(db.Integer, db.ForeignKey(User.id))
-    target = db.relationship(User, foreign_keys=(targetId,), backref='accepted_transactions')
+    target = db.relationship(User, foreign_keys=(targetId,))
 
     def __repr__(self):
         return '<Transaction {0.id} by {0.ownerId}: {0.amount} {0.item} for {0.price} per pcs, {0.timestamp}>'.format(self)

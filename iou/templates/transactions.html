@@ -1,29 +1,64 @@
 {% extends 'layout.html' %}
 
 {% block content %}
+
 {% if current_user.is_authenticated %}
 
 <h5>My transactions</h5>
 <table class="striped">
     <thead>
         <tr>
-            <td>Paticipant</td>
-            <td>My offer</td>
-            <td>His offer</td>
+            <td>Action</td>
+            <td>From/To</td>
+            <td>Item</td>
+            <td>Price</td>
             <td>Completed</td>
             <td>Credit after</td>
         </tr>
     </thead>
-    <tbody>
-        <tr>
-            <td>user@test.com</td>
-            <td>Beer (2 pcs)</td>
-            <td>25 IOU</td>
-            <td>27.07.2018</td>
-            <td>235 IOU</td>
-        </tr>
-    </tbody>
+    <tbody id='rows' />
 </table>
 
+<script>
+    function buildRow(parent, data, users) {
+        var isOwner = {{current_user.id}} == data.owner;
+        var participantId = isOwner ? data.target : data.owner;
+        var row = domCreate({
+            el: 'tr',
+            child: [
+                {el: 'td', text: isOwner ? "Sell" : "Buy"},
+                {el: 'td', text: users[participantId].email},
+                {el: 'td', text: data.item + " (" + data.amount + " pcs)"},
+                {el: 'td', text: data.price + " IOU"},
+                {el: 'td', text: new Date(data.timestamp).toGMTString()},
+                {el: 'td', text: "220 IOU"},
+            ]
+        });
+        parent.appendChild(row);
+    }
+
+    var url = "{{url_for('schemaList', modelName='user')}}";
+    fetch(url).then(response => {
+       return response.json()
+    }).then(data => {
+        var users = {};
+        for (let user of data) {
+            users[user.id] = user;
+        }
+
+        console.log(users);
+
+        var url = "{{url_for('schemaList', modelName='transaction')}}";
+        fetch(url).then(response => {
+            return response.json()
+        }).then(data => {
+            var tableBody = document.getElementById('rows');
+            for (let row of data) {
+                buildRow(tableBody, row, users);
+            }
+        });
+   });
+
+</script>
 {% endif %}
 {% endblock %}

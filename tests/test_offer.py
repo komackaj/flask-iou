@@ -56,7 +56,7 @@ class OfferTest(TestBase):
             self.assertEqual(targetId, loggedIn)
 
             # accept it
-            transaction = self.call('/api/offer/{}/accept'.format(offer['id']))
+            transaction = self.call('/api/offer/{}/accept'.format(offer['id']), data=None)
 
             # offer is removed
             self.call('/api/offer/{}/'.format(offer['id']), expectedStatus=404)
@@ -72,18 +72,39 @@ class OfferTest(TestBase):
 
             # TODO: check credit
 
+    def test_accept_offer_without_target_has_target_in_transaction(self):
+        with self.client:
+            ownerId = self.login('owner_AOWT@test.com')['id']
+            offer = self.createOffer(ownerId, 'tapas', amount=5, price=3)
+            self.assertIsNone(offer['target'])
+            offerUrl = '/api/offer/{}'.format(offer['id'])
+
+            targetId = self.login('target_AOWT@test.com')['id']
+            transaction = self.call(offerUrl + '/accept', amount=2)
+            self.assertEqual(transaction['target'], targetId)
+            self.assertEqual(transaction['amount'], 2)
+
+            remainingOffer = self.call(offerUrl)
+            self.assertIsNone(remainingOffer['target'], None)
+            self.assertEqual(remainingOffer['amount'], 3)
+
     def test_partial_accept(self):
          with self.client:
-            targetEmail = 'client@test.com'
+            targetEmail = 'client_partial@test.com'
             ownerId = self.login('admin@test.com')['id']
             targetId = self.createUser(targetEmail)
             offer = self.createOffer(ownerId, 'coffee', amount=500, price=5, targetId=targetId)
             self.login(targetEmail)
-            offerUrl = '/api/offer/{}/accept'.format(offer['id'])
-            transaction = self.call(offerUrl + '?amount=200')
+            offerUrl = '/api/offer/{}'.format(offer['id'])
+            transaction = self.call(offerUrl + '/accept', amount=200)
             self.assertEqual(transaction['amount'], 200)
             offer = self.call(offerUrl)
             self.assertEqual(offer['amount'], 300)
+
+            # exhaust
+            transaction = self.call(offerUrl + '/accept', amount=300)
+            self.assertEqual(transaction['amount'], 300)
+            self.call(offerUrl, expectedStatus=404)
 
     def test_accept_by_nontarget_denied(self):
          with self.client:
@@ -91,7 +112,14 @@ class OfferTest(TestBase):
             targetId = self.createUser('target@test.com')
             offer = self.createOffer(ownerId, 'pizza', amount=1, price=15, targetId=targetId)
             self.login('another@test.com')
-            data = self.call('/api/offer/{}/accept'.format(offer['id']), expectedStatus=403)
+            data = self.call('/api/offer/{}/accept'.format(offer['id']), expectedStatus=403, data=None)
+
+    def test_accept_without_target(self):
+         with self.client:
+            ownerId = self.login('admin@test.com')['id']
+            offer = self.createOffer(ownerId, 'pizza', amount=1, price=17)
+            self.login('another@test.com')
+            data = self.call('/api/offer/{}/accept'.format(offer['id']), data=None)
 
     def test_decline(self):
         targetEmail = 'targetDecline@test.com'
@@ -101,7 +129,7 @@ class OfferTest(TestBase):
             offer = self.createOffer(ownerId, 'pizza', amount=1, price=15, targetId=targetId)
             offerUrl = '/api/offer/{}'.format(offer['id'])
             self.login(targetEmail)
-            self.call(offerUrl + '/decline', expectedStatus=204)
+            self.call(offerUrl + '/decline', expectedStatus=204, data=None)
             data = self.call(offerUrl, expectedStatus=404)
 
     def test_decline_by_nontarget_denied(self):
@@ -110,7 +138,23 @@ class OfferTest(TestBase):
             targetId = self.createUser('targetDeclineDenied@test.com')
             offer = self.createOffer(ownerId, 'pizza', amount=1, price=17, targetId=targetId)
             self.login('anotherDeclineDenied@test.com')
-            self.call('/api/offer/{}/decline'.format(offer['id']), expectedStatus=403)
+            self.call('/api/offer/{}/decline'.format(offer['id']), expectedStatus=403, data=None)
+
+    def test_remove(self):
+        with self.client:
+            ownerId = self.login('adminRemove@test.com')['id']
+            offer = self.createOffer(ownerId, 'cake', amount=10, price=11)
+            offerUrl = '/api/offer/{}'.format(offer['id'])
+            self.call(offerUrl + '/remove', expectedStatus=204, data=None)
+            data = self.call(offerUrl, expectedStatus=404)
+
+    def test_remove_by_target_denied(self):
+         with self.client:
+            ownerId = self.login('adminRemoveDenied@test.com')['id']
+            targetId = self.createUser('anotherRemoveDenied@test.com')
+            offer = self.createOffer(ownerId, 'cake', amount=5, price=7, targetId=targetId)
+            self.login('anotherRemoveDenied@test.com')
+            self.call('/api/offer/{}/remove'.format(offer['id']), expectedStatus=403, data=None)
 
 if __name__ == "__main__":
     unittest.main(verbosity=2)
