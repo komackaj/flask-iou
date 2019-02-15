@@ -75,10 +75,13 @@ class OfferTest(TestBase):
             self.assertEqual(transaction['target'], targetId)
             self.assertIsNotNone(transaction['timestamp'])
             self.check_credit(-3*10)
+            self.login(ownerEmail)
+            self.check_credit(3*10)
 
     def test_accept_offer_without_target_has_target_in_transaction(self):
         with self.client:
-            ownerId = self.login('owner_AOWT@test.com')['id']
+            ownerEmail = 'owner_AOWT@test.com'
+            ownerId = self.login(ownerEmail)['id']
             offer = self.createOffer(ownerId, 'tapas', amount=5, price=3)
             self.assertIsNone(offer['target'])
             offerUrl = '/api/offer/{}'.format(offer['id'])
@@ -94,9 +97,10 @@ class OfferTest(TestBase):
             self.assertEqual(remainingOffer['amount'], 3)
 
     def test_partial_accept(self):
-         with self.client:
+        with self.client:
+            ownerEmail = 'admin_partial@test.com'
             targetEmail = 'client_partial@test.com'
-            ownerId = self.login('admin@test.com')['id']
+            ownerId = self.login(ownerEmail)['id']
             targetId = self.createUser(targetEmail)
             offer = self.createOffer(ownerId, 'coffee', amount=500, price=5, targetId=targetId)
             self.login(targetEmail)
@@ -112,33 +116,43 @@ class OfferTest(TestBase):
             self.assertEqual(transaction['amount'], 300)
             self.call(offerUrl, expectedStatus=404)
 
+            self.login(ownerEmail)
+            self.check_credit(5*500)
+
     def test_accept_by_nontarget_denied(self):
-         with self.client:
-            ownerId = self.login('admin@test.com')['id']
+        with self.client:
+            ownerEmail = 'admin_denied@test.com'
+            ownerId = self.login(ownerEmail)['id']
             targetId = self.createUser('target@test.com')
             offer = self.createOffer(ownerId, 'pizza', amount=1, price=15, targetId=targetId)
             self.login('another@test.com')
             data = self.call('/api/offer/{}/accept'.format(offer['id']), expectedStatus=403, data=None)
             self.check_credit(0)
+            self.login(ownerEmail)
+            self.check_credit(0)
 
     def test_accept_without_target(self):
-         with self.client:
-            ownerId = self.login('admin@test.com')['id']
+        with self.client:
+            ownerId = self.login('admin_AWT@test.com')['id']
             offer = self.createOffer(ownerId, 'pizza', amount=1, price=17)
-            self.login('another@test.com')
+            self.login('another_AWT@test.com')
             data = self.call('/api/offer/{}/accept'.format(offer['id']), data=None)
             self.check_credit(-17)
 
     def test_decline(self):
         targetEmail = 'targetDecline@test.com'
         with self.client:
-            ownerId = self.login('adminDecline@test.com')['id']
+            ownerEmail = 'adminDecline@test.com'
+            ownerId = self.login(ownerEmail)['id']
             targetId = self.createUser(targetEmail)
             offer = self.createOffer(ownerId, 'pizza', amount=1, price=15, targetId=targetId)
             offerUrl = '/api/offer/{}'.format(offer['id'])
             self.login(targetEmail)
             self.call(offerUrl + '/decline', expectedStatus=204, data=None)
             data = self.call(offerUrl, expectedStatus=404)
+
+            self.check_credit(0)
+            self.login(ownerEmail)
             self.check_credit(0)
 
     def test_decline_by_nontarget_denied(self):
@@ -163,11 +177,14 @@ class OfferTest(TestBase):
 
     def test_remove_by_target_denied(self):
          with self.client:
-            ownerId = self.login('adminRemoveDenied@test.com')['id']
+            ownerEmail = 'adminRemoveDenied@test.com'
+            ownerId = self.login(ownerEmail)['id']
             targetId = self.createUser('anotherRemoveDenied@test.com')
             offer = self.createOffer(ownerId, 'cake', amount=5, price=7, targetId=targetId)
             self.login('anotherRemoveDenied@test.com')
             self.call('/api/offer/{}/remove'.format(offer['id']), expectedStatus=403, data=None)
+            self.check_credit(0)
+            self.login(ownerEmail)
             self.check_credit(0)
 
 if __name__ == "__main__":
