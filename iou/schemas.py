@@ -46,6 +46,7 @@ class SchemaBase(ma.ModelSchema):
 class UserSchema(SchemaBase):
     class Meta:
         model = models.User
+        dump_only = ['credit']
 
 class OAuthSchema(SchemaBase):
     class Meta:
