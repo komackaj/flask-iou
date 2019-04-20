@@ -61,37 +61,11 @@ class OfferSchema(SchemaBase):
         remove = 'owner'
 
     def accept(self, id, amount=None):
-        # convert offer to transaction
-        # specify amount for partial accept
-
         offer = self.Meta.model.query.get(id)
         if offer.target:
             self.validate(offer, 'accept')
+        return offer.accept(amount=amount)
 
-        if amount is not None:
-            if amount <= 0:
-                raise ValueError("Invalid amount - must be at least 1")
-            if amount > offer.amount:
-                raise ValueError("Invalid amount - can accept up to {}".format(offer.amount))
-
-        transaction = models.Transaction.fromOffer(offer)
-        if transaction.targetId is None:
-            transaction.target = current_user
-        if amount and amount < offer.amount:
-            offer.amount -= amount
-            transaction.amount = amount
-        else:
-            models.db.session.delete(offer)
-
-        owner = models.User.query.get(offer.ownerId)
-        value = transaction.amount * transaction.price
-        owner.credit += value
-        current_user.credit -= value
-
-        models.db.session.add(owner)
-        models.db.session.add(transaction)
-        models.db.session.commit()
-        return transaction
 
     def _checkAndRemove(self, id, action):
         offer = self.Meta.model.query.get(id)

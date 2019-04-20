@@ -45,6 +45,35 @@ class Offer(db.Model):
     def __repr__(self):
         return '<Offer {0.id} by {0.ownerId}: {0.amount} {0.item} for {0.price} per pcs>'.format(self)
 
+    def accept(self, target=current_user, amount=None):
+        # convert offer to transaction
+        # specify amount for partial accept
+
+        if amount is not None:
+            if amount <= 0:
+                raise ValueError("Invalid amount - must be at least 1")
+            if amount > self.amount:
+                raise ValueError("Invalid amount - can accept up to {}".format(offer.amount))
+
+        transaction = Transaction.fromOffer(self)
+        if transaction.targetId is None:
+            transaction.target = target
+        if amount and amount < self.amount:
+            self.amount -= amount
+            transaction.amount = amount
+        else:
+            db.session.delete(self)
+
+        owner = User.query.get(self.ownerId)
+        value = transaction.amount * transaction.price
+        owner.credit += value
+        target.credit -= value
+
+        db.session.add(owner)
+        db.session.add(transaction)
+        db.session.commit()
+        return transaction
+
 class Transaction(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     item = db.Column(db.String)
