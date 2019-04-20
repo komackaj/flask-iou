@@ -29,10 +29,14 @@ class SchemaBase(ma.ModelSchema):
         if all(current_user!=owner for owner in owners):
             raise HTTPException.Forbidden()
 
-    def create(self, data):
+    def _create_obj(self, data):
         new_obj = self.make_instance(data)
         models.db.session.add(new_obj)
         models.db.session.commit()
+        return new_obj
+
+    def create(self, data):
+        new_obj = self._create_obj(data)
         return self.jsonify(new_obj)
 
     def detail(self, id):
@@ -66,6 +70,15 @@ class OfferSchema(SchemaBase):
             self.validate(offer, 'accept')
         return offer.accept(amount=amount)
 
+    def create(self, inData):
+        targetId = inData.get('targetId')
+        if current_user.id == 1 and targetId is not None:
+            offer = self._create_obj(inData)
+            target = models.User.query.get(targetId)
+            transaction = offer.accept(target=target)
+            return schemas['transaction'].jsonify(transaction)
+        else:
+            return super().create(inData)
 
     def _checkAndRemove(self, id, action):
         offer = self.Meta.model.query.get(id)
