@@ -11,20 +11,50 @@ db = SQLAlchemy()
 
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(80), unique=True, nullable=False)
+    username = db.Column(db.String, unique=True)
+    password = db.Column(db.String)
+    email = db.Column(db.String(80), unique=True)
     credit = db.Column(db.Integer, default=0)
 
     def __repr__(self):
         return '<User %r>' % self.email
 
     @classmethod
-    def getOrCreate(cls, email):
-        user = cls.query.filter_by(email=email).first()
-        if user is None:
-            user = cls(email=email)
-            db.session.add(user)
-            db.session.commit()
+    def create(cls, username, password, email=None):
+        user = cls.query.filter_by(username=username).first()
+        if user is not None:
+            return ValueError("User exists already")
+
+        user = cls(username=username, password=password, email=email)
+        db.session.add(user)
+        db.session.commit()
         return user
+
+    @classmethod
+    def get(cls, username, password):
+        user = cls.query.filter_by(username=username).first()
+        if user is None or not cls._verify_password(user, password):
+            return None
+        return user
+
+    @classmethod
+    def getOrCreate(cls, username, password):
+        user = cls.query.filter_by(username=username).first()
+        if not user:
+            return cls.create(username, password, email=None)
+
+        if not cls._verify_password(user, password):
+            raise ValueError()
+        return user
+
+    @classmethod
+    def getByEmail(cls, email):
+        user = cls.query.filter_by(email=email).first()
+        return user
+
+    @staticmethod
+    def _verify_password(user, password):
+        return user.password == password
 
 class OAuth(db.Model, OAuthConsumerMixin):
     __tablename__ = "flask_dance_oauth"

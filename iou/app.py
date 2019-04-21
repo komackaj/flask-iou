@@ -2,7 +2,7 @@ import os
 import traceback
 
 import flask
-from flask_login import login_required, current_user, logout_user
+from flask_login import current_user, login_required, logout_user
 import sqlalchemy.orm.exc as saException
 import werkzeug.exceptions as HTTPException
 
@@ -18,13 +18,6 @@ init_app_db(app)
 def create_tables():
     with app.app_context():
         db.create_all()
-
-@app.route('/fakeLogin')
-def fakeLogin():
-    from iou.login import google_logged_in
-    email = flask.request.args['email']
-    google_logged_in(None, email, testing=True)
-    return "OK"
 
 @app.route('/')
 def index():
@@ -49,16 +42,6 @@ def transactions():
 @app.route('/edit-offer')
 def edit_offer():
     return flask.render_template('offer-form.html')
-
-@app.route('/user', methods=["GET", "POST"])
-def user():
-    if app.testing and flask.request.method == "POST":
-        from iou.login import google_logged_in
-        email = flask.request.json['email']
-        google_logged_in(None, email, app.testing)
-
-    user = schemas['user'].dump(current_user)[0] if current_user.is_authenticated else None
-    return flask.jsonify(user=user)
 
 @app.route('/logout')
 @login_required
@@ -86,6 +69,15 @@ def schemaCreate(modelName):
 @app.route('/api/<modelName>/<int:id>')
 def schemaDetail(modelName, id):
     return schemaOrAbort(modelName).detail(id)
+
+@app.route('/api/user/current')
+def userCurrent():
+    return schemaOrAbort('user').current()
+
+@app.route('/api/user/login', methods=['POST'])
+def userLogin():
+    params = flask.request.json or flask.request.form.to_dict()
+    return schemaOrAbort('user').login(params)
 
 @app.route('/api/offer/<int:id>/accept', methods=['POST'])
 def acceptOffer(id):

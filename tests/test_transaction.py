@@ -28,8 +28,8 @@ class TransactionTest(TestBase):
 
     def test_list(self):
         with self.client:
-            ownerId = self.login('me@test.com')['id']
-            targetId = self.login('him@test.com')['id']
+            ownerId = self.createUser('me@test.com')['id']
+            targetId = self.createUser('him@test.com')['id']
             transaction = self.createTransaction('pie', amount=2, price=5, ownerId=ownerId, targetId=targetId)
             self.assertEqual('pie', transaction['item'])
 

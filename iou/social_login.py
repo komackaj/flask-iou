@@ -25,24 +25,21 @@ def load_user(user_id):
     return User.query.get(int(user_id))
 
 @oauth_authorized.connect_via(google_blueprint)
-def google_logged_in(blueprint, token, testing=False):
+def google_logged_in(blueprint, token):
     if not token:
         flask.flash("Failed to log in with {name}".format(name=blueprint.name))
         return
 
-    if testing:
-        email = token
-    else:
-        resp = blueprint.session.get('/oauth2/v2/userinfo')
-        if not resp.ok:
-            print("Invalid response", resp.status_code, resp.text)
-            flask.abort(500)
+    resp = blueprint.session.get('/oauth2/v2/userinfo')
+    if not resp.ok:
+        print("Invalid response", resp.status_code, resp.text)
+        flask.abort(500)
 
-        data = resp.json()
-        email = data.get('email')
-        if not email:
-            print("Email not present in ", data)
-            flask.abort(500)
+    data = resp.json()
+    email = data.get('email')
+    if not email:
+        print("Email not present in ", data)
+        flask.abort(500)
 
-    user = User.getOrCreate(email)
+    user = User.getByEmail(email) or User.create(username=email, password=None, email=email)
     flask_login.login_user(user)

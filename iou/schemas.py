@@ -1,18 +1,17 @@
 # -*- coding: utf-8 -*-
 
 import iou.models as models
-import iou.login as login
+import iou.social_login as social_login
 
 from flask_marshmallow import Marshmallow
-from flask_login import current_user
+from flask_login import current_user, login_user
 import werkzeug.exceptions as HTTPException
 
 ma = Marshmallow()
 
-
 def init_app_db(app):
     models.db.init_app(app)
-    login.init_app(app, models.danceAlchemyBackend)
+    social_login.init_app(app, models.danceAlchemyBackend)
     ma.init_app(app)
 
 class SchemaBase(ma.ModelSchema):
@@ -51,6 +50,25 @@ class UserSchema(SchemaBase):
     class Meta:
         model = models.User
         dump_only = ['credit']
+
+    def _getOrCreate(self, data, method):
+        username = data['username']
+        password = data['password']
+        if username and password:
+            user = method(username, password)
+            if user:
+                login_user(user)
+        return self.current()
+
+    def create(self, data):
+        return self._getOrCreate(data, self.Meta.model.create)
+
+    def login(self, data):
+        return self._getOrCreate(data, self.Meta.model.get)
+
+    def current(self):
+        user = current_user if current_user.is_authenticated else None
+        return self.jsonify(user)
 
 class OAuthSchema(SchemaBase):
     class Meta:
