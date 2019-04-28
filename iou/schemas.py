@@ -29,10 +29,14 @@ class SchemaBase(ma.ModelSchema):
         if all(current_user!=owner for owner in owners):
             raise HTTPException.Forbidden()
 
-    def create(self, data):
+    def _create_obj(self, data):
         new_obj = self.make_instance(data)
         models.db.session.add(new_obj)
         models.db.session.commit()
+        return new_obj
+
+    def create(self, data):
+        new_obj = self._create_obj(data)
         return self.jsonify(new_obj)
 
     def detail(self, id):
@@ -61,37 +65,20 @@ class OfferSchema(SchemaBase):
         remove = 'owner'
 
     def accept(self, id, amount=None):
-        # convert offer to transaction
-        # specify amount for partial accept
-
         offer = self.Meta.model.query.get(id)
         if offer.target:
             self.validate(offer, 'accept')
+        return offer.accept(amount=amount)
 
-        if amount is not None:
-            if amount <= 0:
-                raise ValueError("Invalid amount - must be at least 1")
-            if amount > offer.amount:
-                raise ValueError("Invalid amount - can accept up to {}".format(offer.amount))
-
-        transaction = models.Transaction.fromOffer(offer)
-        if transaction.targetId is None:
-            transaction.target = current_user
-        if amount and amount < offer.amount:
-            offer.amount -= amount
-            transaction.amount = amount
+    def create(self, inData):
+        targetId = inData.get('targetId')
+        if current_user.id == 1 and targetId is not None:
+            offer = self._create_obj(inData)
+            target = models.User.query.get(targetId)
+            transaction = offer.accept(target=target)
+            return schemas['transaction'].jsonify(transaction)
         else:
-            models.db.session.delete(offer)
-
-        owner = models.User.query.get(offer.ownerId)
-        value = transaction.amount * transaction.price
-        owner.credit += value
-        current_user.credit -= value
-
-        models.db.session.add(owner)
-        models.db.session.add(transaction)
-        models.db.session.commit()
-        return transaction
+            return super().create(inData)
 
     def _checkAndRemove(self, id, action):
         offer = self.Meta.model.query.get(id)

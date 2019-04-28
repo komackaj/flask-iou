@@ -187,5 +187,14 @@ class OfferTest(TestBase):
             self.login(ownerEmail)
             self.check_credit(0)
 
+    def test_autoaccept_admin(self):
+        with self.client:
+            userId = self.login('user_AAA@test.com')['id']
+            adminId = self.login(self.adminEmail)['id']
+            self.assertEqual(adminId, 1)
+            transaction = self.createOffer(adminId, 'fee', amount=1, price=8, targetId=userId)
+            self.assertIn('timestamp', transaction)
+            self.check_credit(8)
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

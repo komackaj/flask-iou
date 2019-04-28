@@ -13,10 +13,15 @@ class TestBase(unittest.TestCase):
         cls.app = app
         cls.app.testing = True
         create_tables()
+        cls.adminEmail = 'testadmin@test.com'
+        cls.adminId = None
 
     def setUp(self):
+        cls = self.__class__
         self.client = self.app.test_client()
         self.app.app_context().push()
+        if cls.adminId is None:
+            cls.adminId = self.createUser(self.adminEmail)
 
     @classmethod
     def tearDownClass(cls):
