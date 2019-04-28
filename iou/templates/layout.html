@@ -3,6 +3,7 @@
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/materialize.min.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+<script src="{{ url_for('static', filename='js/utils.js') }}"></script>
 
 <body>
 <div class="container">
@@ -16,7 +17,7 @@
 
 {% if current_user.is_authenticated %}
     <span class="iou-status right right-align">
-        <b>Credit</b>: 220
+        <b>Credit</b>: {{current_user.credit}} IOU
     </span>
 {% endif %}
 

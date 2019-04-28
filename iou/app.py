@@ -6,7 +6,7 @@ from flask_login import login_required, current_user, logout_user
 import sqlalchemy.orm.exc as saException
 import werkzeug.exceptions as HTTPException
 
-from iou.models import db, Offer
+from iou.models import db, Offer, User
 from iou.schemas import init_app_db, schemas
 
 app = flask.Flask(__name__)
@@ -32,11 +32,15 @@ def index():
 
 @app.route('/offers')
 def offers():
-    return flask.render_template('offers.html')
+    params = {
+        'offers': Offer.query.all(),
+        'users' : User.query.all(),
+    }
+    return flask.render_template('offers.html', **params)
 
 @app.route('/people')
 def people():
-    return flask.render_template('people.html')
+    return flask.render_template('people.html', users=User.query.all())
 
 @app.route('/transactions')
 def transactions():
@@ -75,22 +79,28 @@ def schemaList(modelName):
 
 @app.route('/api/<modelName>/', methods=['POST'])
 def schemaCreate(modelName):
-    data = schemaOrAbort(modelName).create(flask.request.json)
+    inData = flask.request.json or flask.request.form.to_dict()
+    data = schemaOrAbort(modelName).create(inData)
     return flask.make_response(data, 201)
 
 @app.route('/api/<modelName>/<int:id>')
 def schemaDetail(modelName, id):
     return schemaOrAbort(modelName).detail(id)
 
-@app.route('/api/offer/<int:id>/accept')
+@app.route('/api/offer/<int:id>/accept', methods=['POST'])
 def acceptOffer(id):
-    amount = flask.request.args.get('amount', default=None, type=int)
+    amount = flask.request.json.get('amount')
     transaction = schemaOrAbort('offer').accept(id, amount)
-    return schemaOrAbort('transaction').jsonify(transaction)
+    return schemas['transaction'].jsonify(transaction)
 
-@app.route('/api/offer/<int:id>/decline')
-def denyOffer(id):
-    schemaOrAbort('offer').deny(id)
+@app.route('/api/offer/<int:id>/decline', methods=['POST'])
+def declineOffer(id):
+    schemaOrAbort('offer').decline(id)
+    return flask.make_response("No content", 204)
+
+@app.route('/api/offer/<int:id>/remove', methods=['POST'])
+def removeOffer(id):
+    schemaOrAbort('offer').remove(id)
     return flask.make_response("No content", 204)
 
 @app.errorhandler(Exception)
@@ -102,7 +112,7 @@ def internal_server_error(error):
         return HTTPException.NotFound()
 
     if isinstance(error, ValueError):
-        return HTTPException.BadArgument()
+        return HTTPException.BadRequest()
 
     traceback.print_exc()
     return "Internal server error", 500
